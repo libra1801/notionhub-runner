@@ -255,12 +255,20 @@ jobs:
       - name: 检查同步运动配置
         id: job_config
         if: steps.progress.outcome == 'success'
+        env:
+          RAW_ACTION_PAYLOAD: ${{ github.event.inputs.payload || '{}' }}
         run: |
           SERVICE_CONFIG="$KEEP_CONFIG"
           PLAN=$(printf '%s' "$SERVICE_CONFIG" | jq -r '.KEEP_SYNC_PLAN // "lifetime"')
           JOB_ENABLED=true
           SKIP_REASON=""
-          SERVICE_OPTIONS=$(printf '%s' "$SERVICE_CONFIG" | jq -c '.KEEP_SERVICE_OPTIONS // {}')
+          CONFIG_SERVICE_OPTIONS=$(printf '%s' "$SERVICE_CONFIG" | jq -c '.KEEP_SERVICE_OPTIONS // {}')
+          PAYLOAD_SERVICE_OPTIONS=$(jq -cn --arg raw "$RAW_ACTION_PAYLOAD" '($raw | fromjson? // {}) | if (.serviceOptions | type) == "object" then .serviceOptions else null end')
+          if [ "$PAYLOAD_SERVICE_OPTIONS" != "null" ]; then
+            SERVICE_OPTIONS="$PAYLOAD_SERVICE_OPTIONS"
+          else
+            SERVICE_OPTIONS="$CONFIG_SERVICE_OPTIONS"
+          fi
           if ! printf '%s' "$SERVICE_OPTIONS" | jq -e --arg key "workout" '(if type == "string" then (try fromjson catch {}) elif type == "object" then . else {} end) | (.enabledStreams // []) as $enabled | ($enabled | length == 0) or ($enabled | index($key) != null)' >/dev/null; then
             JOB_ENABLED=false
             SKIP_REASON="未在同步内容中启用"
@@ -330,6 +338,7 @@ jobs:
           fi
           cd runner
           python -m notionhub_runner sync keep --job workout
+
 
       - name: 记录同步运动结果
         if: always() && steps.activation.outputs.enabled == 'true'
@@ -478,12 +487,20 @@ jobs:
       - name: 检查同步睡眠配置
         id: job_config
         if: needs.workout.outputs.enabled == 'true' && needs.workout.result == 'success' && steps.restore.outcome == 'success'
+        env:
+          RAW_ACTION_PAYLOAD: ${{ github.event.inputs.payload || '{}' }}
         run: |
           SERVICE_CONFIG="$KEEP_CONFIG"
           PLAN=$(printf '%s' "$SERVICE_CONFIG" | jq -r '.KEEP_SYNC_PLAN // "lifetime"')
           JOB_ENABLED=true
           SKIP_REASON=""
-          SERVICE_OPTIONS=$(printf '%s' "$SERVICE_CONFIG" | jq -c '.KEEP_SERVICE_OPTIONS // {}')
+          CONFIG_SERVICE_OPTIONS=$(printf '%s' "$SERVICE_CONFIG" | jq -c '.KEEP_SERVICE_OPTIONS // {}')
+          PAYLOAD_SERVICE_OPTIONS=$(jq -cn --arg raw "$RAW_ACTION_PAYLOAD" '($raw | fromjson? // {}) | if (.serviceOptions | type) == "object" then .serviceOptions else null end')
+          if [ "$PAYLOAD_SERVICE_OPTIONS" != "null" ]; then
+            SERVICE_OPTIONS="$PAYLOAD_SERVICE_OPTIONS"
+          else
+            SERVICE_OPTIONS="$CONFIG_SERVICE_OPTIONS"
+          fi
           if ! printf '%s' "$SERVICE_OPTIONS" | jq -e --arg key "sleep" '(if type == "string" then (try fromjson catch {}) elif type == "object" then . else {} end) | (.enabledStreams // []) as $enabled | ($enabled | length == 0) or ($enabled | index($key) != null)' >/dev/null; then
             JOB_ENABLED=false
             SKIP_REASON="未在同步内容中启用"
@@ -686,6 +703,7 @@ jobs:
           cd runner
           python -m notionhub_runner sync keep --job sleep
 
+
       - name: 记录同步睡眠结果
         if: always() && needs.workout.outputs.enabled == 'true' && needs.workout.result == 'success'
         run: |
@@ -833,12 +851,20 @@ jobs:
       - name: 检查同步心率配置
         id: job_config
         if: needs.workout.outputs.enabled == 'true' && needs.sleep.result == 'success' && steps.restore.outcome == 'success'
+        env:
+          RAW_ACTION_PAYLOAD: ${{ github.event.inputs.payload || '{}' }}
         run: |
           SERVICE_CONFIG="$KEEP_CONFIG"
           PLAN=$(printf '%s' "$SERVICE_CONFIG" | jq -r '.KEEP_SYNC_PLAN // "lifetime"')
           JOB_ENABLED=true
           SKIP_REASON=""
-          SERVICE_OPTIONS=$(printf '%s' "$SERVICE_CONFIG" | jq -c '.KEEP_SERVICE_OPTIONS // {}')
+          CONFIG_SERVICE_OPTIONS=$(printf '%s' "$SERVICE_CONFIG" | jq -c '.KEEP_SERVICE_OPTIONS // {}')
+          PAYLOAD_SERVICE_OPTIONS=$(jq -cn --arg raw "$RAW_ACTION_PAYLOAD" '($raw | fromjson? // {}) | if (.serviceOptions | type) == "object" then .serviceOptions else null end')
+          if [ "$PAYLOAD_SERVICE_OPTIONS" != "null" ]; then
+            SERVICE_OPTIONS="$PAYLOAD_SERVICE_OPTIONS"
+          else
+            SERVICE_OPTIONS="$CONFIG_SERVICE_OPTIONS"
+          fi
           if ! printf '%s' "$SERVICE_OPTIONS" | jq -e --arg key "heart_rate" '(if type == "string" then (try fromjson catch {}) elif type == "object" then . else {} end) | (.enabledStreams // []) as $enabled | ($enabled | length == 0) or ($enabled | index($key) != null)' >/dev/null; then
             JOB_ENABLED=false
             SKIP_REASON="未在同步内容中启用"
@@ -1041,6 +1067,7 @@ jobs:
           cd runner
           python -m notionhub_runner sync keep --job heart_rate
 
+
       - name: 记录同步心率结果
         if: always() && needs.workout.outputs.enabled == 'true' && needs.sleep.result == 'success'
         run: |
@@ -1188,12 +1215,20 @@ jobs:
       - name: 检查同步 VO2Max配置
         id: job_config
         if: needs.workout.outputs.enabled == 'true' && needs.heart_rate.result == 'success' && steps.restore.outcome == 'success'
+        env:
+          RAW_ACTION_PAYLOAD: ${{ github.event.inputs.payload || '{}' }}
         run: |
           SERVICE_CONFIG="$KEEP_CONFIG"
           PLAN=$(printf '%s' "$SERVICE_CONFIG" | jq -r '.KEEP_SYNC_PLAN // "lifetime"')
           JOB_ENABLED=true
           SKIP_REASON=""
-          SERVICE_OPTIONS=$(printf '%s' "$SERVICE_CONFIG" | jq -c '.KEEP_SERVICE_OPTIONS // {}')
+          CONFIG_SERVICE_OPTIONS=$(printf '%s' "$SERVICE_CONFIG" | jq -c '.KEEP_SERVICE_OPTIONS // {}')
+          PAYLOAD_SERVICE_OPTIONS=$(jq -cn --arg raw "$RAW_ACTION_PAYLOAD" '($raw | fromjson? // {}) | if (.serviceOptions | type) == "object" then .serviceOptions else null end')
+          if [ "$PAYLOAD_SERVICE_OPTIONS" != "null" ]; then
+            SERVICE_OPTIONS="$PAYLOAD_SERVICE_OPTIONS"
+          else
+            SERVICE_OPTIONS="$CONFIG_SERVICE_OPTIONS"
+          fi
           if ! printf '%s' "$SERVICE_OPTIONS" | jq -e --arg key "vo2max" '(if type == "string" then (try fromjson catch {}) elif type == "object" then . else {} end) | (.enabledStreams // []) as $enabled | ($enabled | length == 0) or ($enabled | index($key) != null)' >/dev/null; then
             JOB_ENABLED=false
             SKIP_REASON="未在同步内容中启用"
@@ -1396,6 +1431,7 @@ jobs:
           cd runner
           python -m notionhub_runner sync keep --job vo2max
 
+
       - name: 记录同步 VO2Max结果
         if: always() && needs.workout.outputs.enabled == 'true' && needs.heart_rate.result == 'success'
         run: |
@@ -1543,12 +1579,20 @@ jobs:
       - name: 检查同步血氧配置
         id: job_config
         if: needs.workout.outputs.enabled == 'true' && needs.vo2max.result == 'success' && steps.restore.outcome == 'success'
+        env:
+          RAW_ACTION_PAYLOAD: ${{ github.event.inputs.payload || '{}' }}
         run: |
           SERVICE_CONFIG="$KEEP_CONFIG"
           PLAN=$(printf '%s' "$SERVICE_CONFIG" | jq -r '.KEEP_SYNC_PLAN // "lifetime"')
           JOB_ENABLED=true
           SKIP_REASON=""
-          SERVICE_OPTIONS=$(printf '%s' "$SERVICE_CONFIG" | jq -c '.KEEP_SERVICE_OPTIONS // {}')
+          CONFIG_SERVICE_OPTIONS=$(printf '%s' "$SERVICE_CONFIG" | jq -c '.KEEP_SERVICE_OPTIONS // {}')
+          PAYLOAD_SERVICE_OPTIONS=$(jq -cn --arg raw "$RAW_ACTION_PAYLOAD" '($raw | fromjson? // {}) | if (.serviceOptions | type) == "object" then .serviceOptions else null end')
+          if [ "$PAYLOAD_SERVICE_OPTIONS" != "null" ]; then
+            SERVICE_OPTIONS="$PAYLOAD_SERVICE_OPTIONS"
+          else
+            SERVICE_OPTIONS="$CONFIG_SERVICE_OPTIONS"
+          fi
           if ! printf '%s' "$SERVICE_OPTIONS" | jq -e --arg key "blood_oxygen" '(if type == "string" then (try fromjson catch {}) elif type == "object" then . else {} end) | (.enabledStreams // []) as $enabled | ($enabled | length == 0) or ($enabled | index($key) != null)' >/dev/null; then
             JOB_ENABLED=false
             SKIP_REASON="未在同步内容中启用"
@@ -1751,6 +1795,7 @@ jobs:
           cd runner
           python -m notionhub_runner sync keep --job blood_oxygen
 
+
       - name: 记录同步血氧结果
         if: always() && needs.workout.outputs.enabled == 'true' && needs.vo2max.result == 'success'
         run: |
@@ -1900,12 +1945,20 @@ jobs:
         id: job_config
         if: needs.workout.outputs.enabled == 'true' && needs.blood_oxygen.result == 'success' && steps.restore.outcome == 'success'
         continue-on-error: true
+        env:
+          RAW_ACTION_PAYLOAD: ${{ github.event.inputs.payload || '{}' }}
         run: |
           SERVICE_CONFIG="$KEEP_CONFIG"
           PLAN=$(printf '%s' "$SERVICE_CONFIG" | jq -r '.KEEP_SYNC_PLAN // "lifetime"')
           JOB_ENABLED=true
           SKIP_REASON=""
-          SERVICE_OPTIONS=$(printf '%s' "$SERVICE_CONFIG" | jq -c '.KEEP_SERVICE_OPTIONS // {}')
+          CONFIG_SERVICE_OPTIONS=$(printf '%s' "$SERVICE_CONFIG" | jq -c '.KEEP_SERVICE_OPTIONS // {}')
+          PAYLOAD_SERVICE_OPTIONS=$(jq -cn --arg raw "$RAW_ACTION_PAYLOAD" '($raw | fromjson? // {}) | if (.serviceOptions | type) == "object" then .serviceOptions else null end')
+          if [ "$PAYLOAD_SERVICE_OPTIONS" != "null" ]; then
+            SERVICE_OPTIONS="$PAYLOAD_SERVICE_OPTIONS"
+          else
+            SERVICE_OPTIONS="$CONFIG_SERVICE_OPTIONS"
+          fi
           if ! printf '%s' "$SERVICE_OPTIONS" | jq -e --arg key "workout" '(if type == "string" then (try fromjson catch {}) elif type == "object" then . else {} end) | (.enabledStreams // []) as $enabled | ($enabled | length == 0) or ($enabled | index($key) != null)' >/dev/null; then
             JOB_ENABLED=false
             SKIP_REASON="未在同步内容中启用"
@@ -2111,6 +2164,7 @@ jobs:
           cd runner
           python -m notionhub_runner sync keep --job workout_heatmap
 
+
       - name: 记录更新运动热力图结果
         if: always() && needs.workout.outputs.enabled == 'true' && needs.blood_oxygen.result == 'success'
         continue-on-error: true
@@ -2257,12 +2311,20 @@ jobs:
         id: job_config
         if: needs.workout.outputs.enabled == 'true' && needs.workout_heatmap.result == 'success' && steps.restore.outcome == 'success'
         continue-on-error: true
+        env:
+          RAW_ACTION_PAYLOAD: ${{ github.event.inputs.payload || '{}' }}
         run: |
           SERVICE_CONFIG="$KEEP_CONFIG"
           PLAN=$(printf '%s' "$SERVICE_CONFIG" | jq -r '.KEEP_SYNC_PLAN // "lifetime"')
           JOB_ENABLED=true
           SKIP_REASON=""
-          SERVICE_OPTIONS=$(printf '%s' "$SERVICE_CONFIG" | jq -c '.KEEP_SERVICE_OPTIONS // {}')
+          CONFIG_SERVICE_OPTIONS=$(printf '%s' "$SERVICE_CONFIG" | jq -c '.KEEP_SERVICE_OPTIONS // {}')
+          PAYLOAD_SERVICE_OPTIONS=$(jq -cn --arg raw "$RAW_ACTION_PAYLOAD" '($raw | fromjson? // {}) | if (.serviceOptions | type) == "object" then .serviceOptions else null end')
+          if [ "$PAYLOAD_SERVICE_OPTIONS" != "null" ]; then
+            SERVICE_OPTIONS="$PAYLOAD_SERVICE_OPTIONS"
+          else
+            SERVICE_OPTIONS="$CONFIG_SERVICE_OPTIONS"
+          fi
           if ! printf '%s' "$SERVICE_OPTIONS" | jq -e --arg key "sleep" '(if type == "string" then (try fromjson catch {}) elif type == "object" then . else {} end) | (.enabledStreams // []) as $enabled | ($enabled | length == 0) or ($enabled | index($key) != null)' >/dev/null; then
             JOB_ENABLED=false
             SKIP_REASON="未在同步内容中启用"
@@ -2467,6 +2529,7 @@ jobs:
           fi
           cd runner
           python -m notionhub_runner sync keep --job sleep_heatmap
+
 
       - name: 记录更新睡眠热力图结果
         if: always() && needs.workout.outputs.enabled == 'true' && needs.workout_heatmap.result == 'success'
